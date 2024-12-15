@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחשבון אחוזי אופים</title>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+            margin: 20px;
+            max-width: 400px;
+            margin: auto;
+            direction: rtl;
+            text-align: right;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        h1 {
+            text-align: center;
+            color: #495057;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .ingredient {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .ingredient input {
+            width: 45%;
+            padding: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-family: 'Assistant', sans-serif;
+        }
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .results {
+            margin-top: 20px;
+            border-top: 1px solid #adb5bd;
+            padding-top: 20px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'Assistant', sans-serif;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .ingredients-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>מחשבון אחוזי אופים</h1>
+
+    <div>
+        <label for="recipeName">שם המתכון:</label>
+        <input type="text" id="recipeName" placeholder="למשל: לחם מחמצת זיתים">
+    </div>
+
+    <div>
+        <label for="recipeAuthor">כותב/ת המתכון:</label>
+        <input type="text" id="recipeAuthor" placeholder="למשל: הקירח">
+    </div>
+
+    <div>
+        <label for="totalFlour">סכום כל הקמחים במתכון (גרם):</label>
+        <input type="number" id="totalFlour" step="5" placeholder="למשל: 1500">
+    </div>
+
+    <div>
+        <p class="ingredients-title">נא להזין כאן את כל המרכיבים והמשקלים:</p>
+        <div id="ingredients">
+            <div class="ingredient">
+                <input type="text" placeholder="שם המרכיב (למשל: קמח לחם)" class="name">
+                <input type="number" placeholder="משקל (גרם)" class="weight" step="5">
+            </div>
+            <div class="ingredient">
+                <input type="text" placeholder="שם המרכיב (למשל: קמח מלא)" class="name">
+                <input type="number" placeholder="משקל (גרם)" class="weight" step="5">
+            </div>
+            <div class="ingredient">
+                <input type="text" placeholder="שם המרכיב (למשל: מים)" class="name">
+                <input type="number" placeholder="משקל (גרם)" class="weight" step="5">
+            </div>
+            <div class="ingredient">
+                <input type="text" placeholder="שם המרכיב" class="name">
+                <input type="number" placeholder="משקל (גרם)" class="weight" step="5">
+            </div>
+            <div class="ingredient">
+                <input type="text" placeholder="שם המרכיב" class="name">
+                <input type="number" placeholder="משקל (גרם)" class="weight" step="5">
+            </div>
+        </div>
+    </div>
+
+    <button onclick="addIngredient()">להוסיף מרכיב</button>
+    <button onclick="removeIngredient()">להסיר מרכיב</button>
+
+    <div>
+        <label for="flourWeight">משקל קמח רצוי (גרם):</label>
+        <input type="number" id="flourWeight" step="5" placeholder="הכנס משקל קמח רצוי">
+    </div>
+
+    <div class="results">
+        <h2 id="recipeHeader">מתכון</h2>
+        <div id="percentages">
+            <h3>אחוזי אופים</h3>
+            <ul id="percentageList"></ul>
+        </div>
+
+        <div id="newRecipe">
+            <h3>מתכון חדש</h3>
+            <ul id="newRecipeList"></ul>
+        </div>
+    </div>
+
+    <button onclick="copyToClipboard()">העתק מתכון ללוח</button>
+
+    <script>
+        function addIngredient() {
+            const ingredientsDiv = document.getElementById('ingredients');
+            const newIngredient = document.createElement('div');
+            newIngredient.classList.add('ingredient');
+            newIngredient.innerHTML = `
+                <input type="text" placeholder="שם המרכיב" class="name">
+                <input type="number" placeholder="משקל (גרם)" class="weight" step="5">
+            `;
+            ingredientsDiv.appendChild(newIngredient);
+        }
+
+        function removeIngredient() {
+            const ingredientsDiv = document.getElementById('ingredients');
+            if (ingredientsDiv.children.length > 1) {
+                ingredientsDiv.removeChild(ingredientsDiv.lastChild);
+            }
+        }
+
+        document.getElementById('flourWeight').addEventListener('input', calculate);
+        document.getElementById('totalFlour').addEventListener('input', calculate);
+        document.getElementById('ingredients').addEventListener('input', calculate);
+        document.getElementById('recipeName').addEventListener('input', updateRecipeHeader);
+        document.getElementById('recipeAuthor').addEventListener('input', updateRecipeHeader);
+
+        function updateRecipeHeader() {
+            const recipeName = document.getElementById('recipeName').value;
+            const recipeAuthor = document.getElementById('recipeAuthor').value;
+            const header = document.getElementById('recipeHeader');
+            header.textContent = recipeName ? `מתכון: ${recipeName}${recipeAuthor ? ` | ${recipeAuthor}` : ''}` : 'מתכון';
+        }
+
+        function calculate() {
+            const ingredients = document.querySelectorAll('.ingredient');
+            const totalFlourInput = document.getElementById('totalFlour');
+            const flourWeightInput = document.getElementById('flourWeight');
+            const totalFlour = parseFloat(totalFlourInput.value) || 0;
+            const desiredFlourWeight = parseFloat(flourWeightInput.value) || 0;
+
+            const ingredientData = [];
+
+            ingredients.forEach(ingredient => {
+                const name = ingredient.querySelector('.name').value;
+                const weight = parseFloat(ingredient.querySelector('.weight').value) || 0;
+
+                if (name && weight) {
+                    ingredientData.push({ name, weight });
+                }
+            });
+
+            const percentageList = document.getElementById('percentageList');
+            const newRecipeList = document.getElementById('newRecipeList');
+
+            percentageList.innerHTML = '';
+            newRecipeList.innerHTML = '';
+
+            ingredientData.forEach(ingredient => {
+                const percentage = totalFlour ? (ingredient.weight / totalFlour * 100) : 0;
+                const formattedPercentage = percentage < 10 && percentage > 0 ? percentage.toFixed(1) : Math.round(percentage);
+                percentageList.innerHTML += `<li>${ingredient.name}: ${formattedPercentage}%</li>`;
+
+                const newWeight = desiredFlourWeight ? (percentage / 100 * desiredFlourWeight) : 0;
+                const formattedNewWeight = newWeight < 10 && newWeight > 0 ? newWeight.toFixed(1) : Math.round(newWeight);
+                newRecipeList.innerHTML += `<li>${ingredient.name}: ${formattedNewWeight} גרם</li>`;
+            });
+        }
+
+        function copyToClipboard() {
+            const recipeName = document.getElementById('recipeName').value || 'מתכון';
+            const recipeAuthor = document.getElementById('recipeAuthor').value || '';
+            const percentages = document.getElementById('percentageList').innerText;
+            const newRecipe = document.getElementById('newRecipeList').innerText;
+
+            const fullRecipe = `${recipeName}${recipeAuthor ? ` | ${recipeAuthor}` : ''}\n\nאחוזי אופים:\n${percentages}\n\nמתכון חדש:\n${newRecipe}`;
+
+            navigator.clipboard.writeText(fullRecipe).then(() => {
+                alert('המתכון הועתק ללוח!');
+            }).catch(err => {
+                console.error('שגיאה בהעתקת המתכון:', err);
+            });
+        }
+    </script>
+</body>
+</html>
